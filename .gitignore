@@ -1,0 +1,21 @@
+# This is a public SHOWCASE repo. No project source belongs here, ever.
+# Defensive ignores in case anything gets copied in by accident:
+layer/
+build/
+src/
+src-tauri/
+scripts/
+third_party/
+*.so
+*.a
+*.o
+*.c
+*.cpp
+*.h
+*.rs
+Cargo.*
+*.apk
+BUILD_PLAN.md
+M2B_TEST_PLAN.md
+node_modules/
+.DS_Store

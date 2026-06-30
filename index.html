@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scalpel — a Proton for Android</title>
+<meta name="description" content="Inject-don't-fork optimizer for Winlator-class Android emulation. Make stock Wine / Box64 / DXVK / Turnip faster by injecting targeted fixes, without forking them." />
+<meta property="og:title" content="Scalpel — a Proton for Android" />
+<meta property="og:description" content="Make stock Wine / Box64 / DXVK / Turnip faster by injecting targeted fixes — without forking them." />
+<meta property="og:type" content="website" />
+<style>
+  :root {
+    --bg: #0b0d10;
+    --panel: #12161b;
+    --line: #1e252d;
+    --ink: #e7edf3;
+    --mut: #8a97a6;
+    --dim: #5d6b7a;
+    --acc: #5eead4;
+    --warn: #f0b35b;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--acc); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+  header { padding: 96px 0 56px; border-bottom: 1px solid var(--line); }
+  .tag {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--acc); margin: 0 0 18px;
+  }
+  h1 {
+    font-size: clamp(40px, 8vw, 72px); line-height: 1.02; margin: 0 0 18px;
+    letter-spacing: -0.03em; font-weight: 700;
+  }
+  h1 .scar { color: var(--acc); }
+  .lede { font-size: clamp(17px, 2.4vw, 21px); color: var(--mut); max-width: 60ch; margin: 0; }
+  .sub { margin-top: 18px; font-style: italic; color: var(--dim); }
+
+  .cta { margin-top: 34px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    font-family: var(--mono); font-size: 13px; padding: 11px 18px;
+    border: 1px solid var(--line); border-radius: 8px; color: var(--ink);
+    background: var(--panel); transition: border-color .15s, transform .15s;
+  }
+  .btn:hover { border-color: var(--acc); text-decoration: none; transform: translateY(-1px); }
+  .btn.primary { border-color: var(--acc); color: var(--acc); }
+
+  section { padding: 56px 0; border-bottom: 1px solid var(--line); }
+  h2 {
+    font-family: var(--mono); font-size: 13px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--dim); margin: 0 0 24px;
+  }
+  h3 { font-size: 22px; margin: 0 0 10px; letter-spacing: -0.01em; }
+  p { color: #c4cdd6; }
+  strong { color: var(--ink); }
+
+  .stat {
+    font-family: var(--mono); background: var(--panel); border: 1px solid var(--line);
+    border-left: 3px solid var(--warn); border-radius: 8px; padding: 18px 20px; margin: 24px 0;
+  }
+  .stat b { color: var(--warn); }
+  .stat span { color: var(--mut); font-size: 14px; }
+
+  ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+  ol.steps li {
+    counter-increment: s; position: relative; padding: 10px 0 10px 44px;
+    border-top: 1px solid var(--line); color: #c4cdd6;
+  }
+  ol.steps li:first-child { border-top: 0; }
+  ol.steps li::before {
+    content: counter(s); position: absolute; left: 0; top: 10px;
+    font-family: var(--mono); font-size: 12px; color: var(--acc);
+    border: 1px solid var(--line); border-radius: 6px; width: 26px; height: 26px;
+    display: grid; place-items: center;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+  td:first-child { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  td code { font-family: var(--mono); font-size: 12px; color: var(--acc); }
+
+  .phases { display: grid; gap: 10px; }
+  .phase { display: grid; grid-template-columns: 56px 1fr; gap: 14px; align-items: baseline;
+    padding: 12px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+  .phase .k { font-family: var(--mono); color: var(--acc); font-size: 13px; }
+  .phase.done { border-color: #234; }
+  .phase.now { border-color: var(--warn); }
+  .pill { font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 99px; margin-left: 8px; }
+  .pill.done { color: var(--acc); border: 1px solid #234; }
+  .pill.now { color: var(--warn); border: 1px solid #3a2f1a; }
+
+  footer { padding: 48px 0 80px; color: var(--dim); font-size: 14px; }
+  footer .note { font-family: var(--mono); font-size: 12px; color: var(--dim); margin-bottom: 14px; }
+
+  @media (max-width: 560px) { td:first-child { white-space: normal; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="tag">inject · don't · fork</p>
+    <h1>Scal<span class="scar">pel</span></h1>
+    <p class="lede">A <strong>Proton for Android</strong>. Make stock Wine&nbsp;/ Box64&nbsp;/ DXVK&nbsp;/ Turnip run x86 Windows games faster by <strong>injecting targeted fixes</strong> — without forking any of them.</p>
+    <p class="sub">The surgeon that operates on the emulation stack without removing the organ.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://thanukamax.github.io/lab/writing/the-gpu-wasnt-even-trying">Read the origin story →</a>
+      <a class="btn" href="https://github.com/Thanukamax/scalpel">GitHub</a>
+      <a class="btn" href="https://thanukamax.github.io/lab/">Blog</a>
+    </div>
+  </header>
+
+  <section>
+    <h2>The number that reframed it</h2>
+    <p>It started as a crash-out: a day spent trying to make a phone run a 2017 PC game faster, watching every config idea die on contact with reality. Then one measurement on <em>NieR: Automata</em>, on a flagship S24 Ultra:</p>
+    <div class="stat">
+      <b>Adreno 750 — 99.8% busy · 37% clock · 38&nbsp;fps</b><br/>
+      <span>≈ 10× the work native hardware would do for the same frame.</span>
+    </div>
+    <p>The bottleneck isn't a setting you forgot to flip. It's <strong>structural translation overhead</strong> baked into the emulation stack. I swept five config levers — GOS, Turnip version, resolution, env-flags, DXVK version — all flat, regressive, or wouldn't launch. <strong>Config knobs don't move it.</strong></p>
+  </section>
+
+  <section>
+    <h2>The principle</h2>
+    <h3>Inject, don't fork</h3>
+    <p>Forking Wine, Box64, DXVK, and Turnip means owning millions of lines and losing every upstream fix. Config tuning doesn't move the needle. The third path is the one <strong>Valve's Proton</strong> already walks on desktop — and nobody walks on Android yet.</p>
+    <ol class="steps">
+      <li>Dependencies stay <strong>stock and auto-updating</strong>.</li>
+      <li>Fixes ride on top through <strong>sanctioned injection points</strong> — not hacks.</li>
+      <li>We maintain only the injection layer + a minimal, auto-rebased patch-overlay.</li>
+      <li><strong>Update = update the app.</strong> Never the deps.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>The surgeon's kit</h2>
+    <table>
+      <thead><tr><th>Target</th><th>Mechanism (no fork)</th><th>Prior art</th></tr></thead>
+      <tbody>
+        <tr><td>Turnip / GPU</td><td>Vulkan layer above the driver — barrier elision, pipeline pre-cache, present pacing</td><td>vkBasalt, Fossilize</td></tr>
+        <tr><td>DXVK / D3D</td><td>wrapper DLL + <code>dxvk.conf</code> injection</td><td>dxvk-async</td></tr>
+        <tr><td>Wine</td><td>DLL overrides + LD_PRELOAD + per-game fix DB</td><td>Proton <code>protonfixes</code></td></tr>
+        <tr><td>Box64 / CPU</td><td>env tuning + patch-overlay for deep reach</td><td>—</td></tr>
+        <tr><td>Patch-overlay</td><td>minimal diffs auto-rebased onto upstream releases</td><td>git patch series + CI</td></tr>
+        <tr><td>The attributor</td><td>per-frame blame → tells us <em>what</em> to inject</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Status</h2>
+    <div class="phases">
+      <div class="phase done"><span class="k">M1</span><div><strong>Built<span class="pill done">done</span></strong><br/>Pass-through Vulkan layer that loads under Winlator (no root) + a per-frame attributor: CPU frametime vs GPU-busy ms → the residual that names the bottleneck regime.</div></div>
+      <div class="phase now"><span class="k">M2</span><div><strong>In progress<span class="pill now">now</span></strong><br/>Barrier / render-pass profiling and the first injected fixes — depth/stencil store elimination, attachment-op knob matrix — A/B'd on a real game.</div></div>
+    </div>
+    <table style="margin-top:24px">
+      <thead><tr><th>Phase</th><th>Goal</th></tr></thead>
+      <tbody>
+        <tr><td>P0</td><td>De-risk — does a Vulkan layer load under Winlator? no-root attributor? auto-rebase overlay?</td></tr>
+        <tr><td>P1</td><td>Attributor MVP — per-frame attribution on a real game</td></tr>
+        <tr><td>P2</td><td>First injected fix — the layer + the specific fix the attributor found</td></tr>
+        <tr><td>P3</td><td>Fix DB + dep manager + packaging</td></tr>
+        <tr><td>P4</td><td>The updatable app</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    <p class="note">// public showcase — implementation lives in a private repo, no buildable source here by design</p>
+    <p>Scalpel is a working codename. Built by <a href="https://github.com/Thanukamax">@Thanukamax</a> · <a href="https://thanukamax.github.io/lab/">blog</a></p>
+  </footer>
+
+</div>
+</body>
+</html>
